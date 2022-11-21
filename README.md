@@ -24,32 +24,30 @@ The command bus eventually calls the command handler which corresponds to the gi
 
 The command bus doesn't merely hand over commands to their handlers. Usually it does all kinds of things. For instance a command bus may validate command data, wrap the command handler in a database transaction, provide queueing options for a command, etc.
 
-Usually those things are done thanks to Middleware system. If you're familiar with [express](https://github.com/expressjs/express), a middleware will be applied before and/or after the handling of your command.
+Usually those things are done thanks to **Middleware** system. If you're familiar with [express](https://github.com/expressjs/express), a middleware will be applied before and/or after the handling of your command.
 
 ## Working with TCommand Bus
 
-
 You will have to declare, your `Commands`, `Commmand Handlers` and `Middlewares`
 
+### Command
 
-## Example
-
-Let's consider an example
+Here is a command
 
 ```ts
 type EditCardLimitsCommand = Command<
-  { hasEdited: boolean },
-  "editCardLimits",
-  { cardId: string; limits: number[] }
+  { hasEdited: boolean }, // The return type of your command handling
+  "editCardLimits", // The name of your command
+  { cardId: string; limits: number[] } // The Payload of your command
 >;
-type EditCardLimitsCommandHandler = CommandHandler<EditCardLimitsCommand>;
+```
 
-type CancelCardCommand = Command<
-  { hasCancelled: boolean },
-  "cancelCard",
-  { cardId: string }
->;
-type CancelCardCommandHandler = CommandHandler<CancelCardCommand>;
+### Command Handler
+
+Here is a command handler
+
+```ts
+type EditCardLimitsCommandHandler = CommandHandler<EditCardLimitsCommand>;
 
 function buildEditCardLimitsHandler(): EditCardLimitsCommandHandler {
   async function handle(
@@ -64,35 +62,60 @@ function buildEditCardLimitsHandler(): EditCardLimitsCommandHandler {
 
   return {
     handle,
-    handledCommandKind: "editCardLimits",
+    handledCommandKind: "editCardLimits", // is enforced by the type of your command handler
   };
 }
+```
 
-function buildCancelCardHandler(): CancelCardCommandHandler {
-  async function handle(
-    _command: CancelCardCommand
-  ): Promise<{ hasCancelled: boolean }> {
-    // DO WHATEVER YOU LIKE
+### Middleware
 
-    return {
-      hasCancelled: true,
-    };
-  }
+Here is the middleware
 
-  return {
-    handle,
-    handledCommandKind: "cancelCard",
-  };
-}
+```ts
+const loggingMiddleware: Middleware = {
+  name: "loggingMiddleware",
+  async intercept<TCommand extends CommandType<TCommand>>(
+    command: TCommand,
+    next: () => Promise<MiddlewareResult<TCommand>>
+  ): Promise<MiddlewareResult<TCommand>> {
+    console.log(`Handling ${command.kind} command`);
 
+    const result = await nextMiddleware(command, "middlewareOne", next);
+
+    console.log(`${command.kind} handled`, { result });
+
+    return result;
+  },
+};
+```
+
+Be careful, in TCommand bus, the middlwares will be executed one after the other in the order you put while instanciating the bus
+
+### And finally the bus!
+
+Let's now instantiate the bus!
+
+```ts
 const editCardLimitsHandler = buildEditCardLimitsHandler();
-const cancelCardCommandHandler = buildCancelCardHandler();
+const handlers = [editCardLimitsHandler];
+const middlewares = [loggingMiddleware];
+// You will need to pass a logger (can be a dummy one) to the command bus
+const logger = {
+  debug() {},
+  info() {},
+  warn() {},
+  error() {},
+};
 
-const handlers = [
-  editCardLimitsHandler,
-  cancelCardCommandHandler,
-];
+const bus = buildCommandBus(handlers, middlewares, logger);
+```
 
+## Example of usage
+
+As now we have our bus :)
+
+```ts
+// The type here is important in order to have the return type
 const editCardLimitsCommand: EditCardLimitsCommand = {
   kind: "editCardLimits",
   payload: {
@@ -100,9 +123,6 @@ const editCardLimitsCommand: EditCardLimitsCommand = {
     limits: [1, 2, 3],
   },
 };
-
-const bus = buildCommandBus(handlers, []);
-
 
 // THIS IS STRONGLY TYPED!
 const result = await bus.handle(editCardLimitsCommand);

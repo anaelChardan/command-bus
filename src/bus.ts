@@ -8,8 +8,14 @@ import { Logger } from "./logger";
 export type CommandBus = {
   handle<TCommand extends CommandType<TCommand>>(
     command: TCommand
-  ): Promise<CommandReturnType<TCommand>>;
+  ): Promise<BusResult<TCommand>>;
 };
+
+type BusResult<TCommand extends CommandType<TCommand>> = R.Result<
+  | { outcome: "NO_NEXT_MIDDLEWARE"; from: string }
+  | { outcome: "NO_HANDLER_FOUND"; commandKind: string },
+  CommandReturnType<TCommand>
+>;
 
 export function buildCommandBus(
   handlers: AnyCommandHandler[],
@@ -20,14 +26,8 @@ export function buildCommandBus(
 
   async function handle<TCommand extends CommandType<TCommand>>(
     command: TCommand
-  ): Promise<CommandReturnType<TCommand>> {
-    const result = await middlewareChain.apply(command);
-
-    if (R.isFailure(result)) {
-      throw new Error(`Command handling ${command.kind} failed`);
-    }
-
-    return result.value;
+  ): Promise<BusResult<TCommand>> {
+    return middlewareChain.apply(command);
   }
 
   return {

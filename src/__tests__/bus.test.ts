@@ -8,6 +8,7 @@ import {
   nextMiddleware,
 } from "../";
 import { Logger } from "../logger";
+import { result as R } from "@dev-spendesk/general-type-helpers";
 
 type EditCardLimitsCommand = Command<
   { hasEdited: boolean },
@@ -90,10 +91,10 @@ describe("Commandbus", () => {
 
     const result = await bus.handle(editCardLimitsCommand);
 
-    expect(result).toEqual({ hasEdited: true });
+    expect(result).toEqual(R.toSuccess({ hasEdited: true }));
   });
 
-  it.only("should call the middlewares", async () => {
+  it("should call the middlewares", async () => {
     const messages: string[] = [];
 
     const middlewareOne: Middleware = {
