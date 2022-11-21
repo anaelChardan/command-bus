@@ -124,6 +124,6 @@ const editCardLimitsCommand: EditCardLimitsCommand = {
   },
 };
 
-// THIS IS STRONGLY TYPED!
+// THIS IS STRONGLY TYPED! It returns a Result type
 const result = await bus.handle(editCardLimitsCommand);
 ```
