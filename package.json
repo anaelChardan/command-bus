@@ -1,0 +1,51 @@
+{
+  "name": "command-bus",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:anaelChardan/command-bus.git",
+  "author": "Anael CHARDAN <anael.chardan@spendesk.com>",
+  "license": "MIT",
+  "engines": {
+    "node": "^14.18.2 || ^16.18.0"
+  },
+  "installConfig": {
+    "hoistingLimits": "workspaces"
+  },
+  "volta": {
+    "node": "16.18.0",
+    "yarn": "1.22.19"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "postbuild": "cpy --cwd=src --parents '**/*' '!**/*.ts' ../build/",
+    "format-check": "prettier '**/*.{ts,json}' --ignore-path ./.gitignore --check",
+    "format": "prettier '**/*.{ts,json}' --ignore-path ./.gitignore --write",
+    "lint": "eslint . --ext .ts --ignore-path ./.gitignore",
+    "test": "jest"
+  },
+  "files": [
+    "build"
+  ],
+  "dependencies": {
+    "@dev-spendesk/general-type-helpers": "^1.25.0",
+    "zod": "^3.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.19.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jest": "^24.1.3",
+    "eslint-plugin-lodash": "^7.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-optimize-regex": "^1.2.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-security": "^1.4.0",
+    "jest": "^28.1.0",
+    "ts-jest": "^28.0.4",
+    "typescript": "^4.7.4",
+    "@dev-spendesk/eslint-config": "^0.3.1",
+    "@dev-spendesk/eslint-config-node": "^0.3.1",
+    "@types/jest": "^26.0.20",
+    "@typescript-eslint/eslint-plugin": "^4.15.0",
+    "@typescript-eslint/parser": "^4.15.0"
+  }
+}

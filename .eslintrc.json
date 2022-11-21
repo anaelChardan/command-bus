@@ -1,0 +1,14 @@
+{
+  "root": true,
+  "extends": [
+    "@dev-spendesk/eslint-config",
+    "@dev-spendesk/eslint-config-node"
+  ],
+  "rules": {
+    "no-param-reassign": [
+      "warn",
+      { "props": true, "ignorePropertyModificationsFor": ["context"] }
+    ],
+    "no-undef-init": "off"
+  }
+}
