@@ -6,12 +6,13 @@ export async function nextMiddleware<
   TCommand extends CommandType<TCommand>
 >(
   command: TCommand,
-  next?: (command: TCommand) => Promise<MiddlewareResult<TCommand>>
+  from: string,
+  next: (command: TCommand) => Promise<MiddlewareResult<TCommand>>
 ): Promise<
   MiddlewareResult<TCommand>
 > {
   if (!next) {
-    return R.toFailure({ outcome: "NO_NEXT_MIDDLEWARE" });
+    return R.toFailure({ outcome: "NO_NEXT_MIDDLEWARE", from });
   }
 
   const result = await next(command);

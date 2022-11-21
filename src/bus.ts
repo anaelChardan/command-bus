@@ -1,11 +1,11 @@
 import { CommandReturnType, CommandType } from "./command";
-import { buildChain, Chain, finalChain } from "./middleware/chain";
+import { createMiddlewareChain } from "./middleware/chain";
 import { Middleware } from "./middleware/types";
 import { result as R } from "@dev-spendesk/general-type-helpers";
 import { AnyCommandHandler } from "./handler";
+import { Logger } from "./logger";
 
-
-type CommandBus = {
+export type CommandBus = {
   handle<TCommand extends CommandType<TCommand>>(
     command: TCommand
   ): Promise<CommandReturnType<TCommand>>;
@@ -13,24 +13,17 @@ type CommandBus = {
 
 export function buildCommandBus(
   handlers: AnyCommandHandler[],
-  middlewares: Middleware[]
+  middlewares: Middleware[],
+  logger: Logger
 ): CommandBus {
-  const middlewareChain: Chain = middlewares.reduceRight(
-    (chain: Chain, middleware: Middleware) => {
-      return buildChain(middleware, chain.next);
-    },
-    finalChain(handlers)
-  );
+  const middlewareChain = createMiddlewareChain(handlers, middlewares, logger);
 
-  console.log(middlewareChain);
-
-  async function handle<
-    TCommand extends CommandType<TCommand>
-  >(command: TCommand): Promise<CommandReturnType<TCommand>> {
+  async function handle<TCommand extends CommandType<TCommand>>(
+    command: TCommand
+  ): Promise<CommandReturnType<TCommand>> {
     const result = await middlewareChain.apply(command);
 
     if (R.isFailure(result)) {
-      console.log(result);
       throw new Error(`Command handling ${command.kind} failed`);
     }
 
@@ -41,4 +34,3 @@ export function buildCommandBus(
     handle,
   };
 }
-

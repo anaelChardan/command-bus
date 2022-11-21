@@ -1,8 +1,13 @@
-import { buildCommandBus } from "../bus";
-import { Command, CommandType } from "../command";
-import { AnyCommandHandler, CommandHandler } from "../handler";
-import { Middleware, MiddlewareResult } from "../middleware/types";
-import { nextMiddleware } from "../middleware/nextMiddleware";
+import { CommandHandler } from "..";
+import {
+  buildCommandBus,
+  Command,
+  CommandType,
+  Middleware,
+  MiddlewareResult,
+  nextMiddleware,
+} from "../";
+import { Logger } from "../logger";
 
 type EditCardLimitsCommand = Command<
   { hasEdited: boolean },
@@ -34,6 +39,21 @@ function buildEditCardLimitsHandler(): EditCardLimitsCommandHandler {
   };
 }
 
+const logger: Logger = {
+  debug(message: string, data?: object) {
+    console.debug(message, data);
+  },
+  info(message: string, data?: object) {
+    console.info(message, data);
+  },
+  warn(message: string, data?: object) {
+    console.warn(message, data);
+  },
+  error(message: string, data?: object) {
+    console.error(message, data);
+  },
+};
+
 function buildCancelCardHandler(): CancelCardCommandHandler {
   async function handle(
     _command: CancelCardCommand
@@ -54,10 +74,7 @@ function buildCancelCardHandler(): CancelCardCommandHandler {
 const editCardLimitsHandler = buildEditCardLimitsHandler();
 const cancelCardCommandHandler = buildCancelCardHandler();
 
-const handlers: AnyCommandHandler[] = [
-  editCardLimitsHandler,
-  cancelCardCommandHandler,
-];
+const handlers = [editCardLimitsHandler, cancelCardCommandHandler];
 
 const editCardLimitsCommand: EditCardLimitsCommand = {
   kind: "editCardLimits",
@@ -69,7 +86,7 @@ const editCardLimitsCommand: EditCardLimitsCommand = {
 
 describe("Commandbus", () => {
   it("should call the command handler", async () => {
-    const bus = buildCommandBus(handlers, []);
+    const bus = buildCommandBus(handlers, [], logger);
 
     const result = await bus.handle(editCardLimitsCommand);
 
@@ -80,14 +97,15 @@ describe("Commandbus", () => {
     const messages: string[] = [];
 
     const middlewareOne: Middleware = {
+      name: "middlewareOne",
       async intercept<TCommand extends CommandType<TCommand>>(
         command: TCommand,
-        next?: () => Promise<MiddlewareResult<TCommand>>
+        next: () => Promise<MiddlewareResult<TCommand>>
       ): Promise<MiddlewareResult<TCommand>> {
         messages.push("middleware one before");
         console.log("middleware one before");
 
-        const result = await nextMiddleware(command, next);
+        const result = await nextMiddleware(command, "middlewareOne", next);
 
         messages.push("middleware one after");
         console.log("middleware one after");
@@ -97,14 +115,15 @@ describe("Commandbus", () => {
     };
 
     const middlewareTwo: Middleware = {
+      name: "middleware two",
       async intercept<TCommand extends CommandType<TCommand>>(
         command: TCommand,
-        next?: () => Promise<MiddlewareResult<TCommand>>
+        next: () => Promise<MiddlewareResult<TCommand>>
       ): Promise<MiddlewareResult<TCommand>> {
         messages.push("middleware two before");
         console.log("middleware two before");
 
-        const result = await nextMiddleware(command, next);
+        const result = await nextMiddleware(command, "middlewareTwo", next);
 
         messages.push("middleware two after");
         console.log("middleware two after");
@@ -113,7 +132,11 @@ describe("Commandbus", () => {
       },
     };
 
-    const bus = buildCommandBus(handlers, [middlewareOne, middlewareTwo]);
+    const bus = buildCommandBus(
+      handlers,
+      [middlewareOne, middlewareTwo],
+      logger
+    );
 
     await bus.handle(editCardLimitsCommand);
 

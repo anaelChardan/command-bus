@@ -9,6 +9,7 @@ export type Command<R, K extends string, P extends {}> = {
 export type CommandReturnType<Type> = Type extends Command<infer R, infer _K, infer _P>
   ? R
   : never;
+
 export type CommandKind<Type> = Type extends Command<infer _R, infer K, infer _P>
   ? K
   : never;
@@ -26,8 +27,3 @@ export type CommandType<TCommand> = Command<
   CommandKind<TCommand>,
   CommandPayload<TCommand>
 >;
-
-// type Toto = Command<{ hasEdited: boolean}, "toto", { toto: string }>;
-// type TotoReturnType = CommandReturnType<Toto>;
-// type TotoKind = CommandKind<Toto>;
-// type TotoPayload = CommandPayload<Toto>;

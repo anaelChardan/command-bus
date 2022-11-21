@@ -1,8 +1,15 @@
 # Command bus
 
-Definition:
+## Definition:
 
 Here is a strongly typed `command-bus`
+
+I will quote the good article from [Matthias Noback](https://matthiasnoback.nl/2015/01/a-wave-of-command-buses/);
+
+### What is a command?
+
+Commands are often used in applications that separate the technical aspects of user input from their meaning inside the application. Commands in object-oriented programming are objects, like everything else. A command is literally some kind of an imperative, indicating what behavior a user, or client, expects from the application.
+
 
 ## Example
 
@@ -60,7 +67,7 @@ function buildCancelCardHandler(): CancelCardCommandHandler {
 const editCardLimitsHandler = buildEditCardLimitsHandler();
 const cancelCardCommandHandler = buildCancelCardHandler();
 
-const handlers: AnyCommandHandler[] = [
+const handlers = [
   editCardLimitsHandler,
   cancelCardCommandHandler,
 ];

@@ -6,19 +6,26 @@ import {
   CommandHandler,
   isTheRightHandler,
 } from "../handler";
+import { Logger } from "../logger";
 
 export function buildInvokeCommandHandlerMiddleware(
+  logger: Logger,
   handlers: AnyCommandHandler[]
 ): Middleware {
   async function intercept<TCommand extends CommandType<TCommand>>(
-    command: TCommand,
-    _next?: (command: TCommand) => Promise<MiddlewareResult<TCommand>>
+    command: TCommand
   ): Promise<MiddlewareResult<TCommand>> {
-    console.log("INVOKING")
+    logger.info("InvokeCommandHandlerMiddleware: trying to handle", {
+      command,
+    });
+
     const handler = findHandler(handlers, command);
 
     if (!handler) {
-      throw new Error(`No handler found for command ${command.kind}`);
+      return R.toFailure({
+        outcome: "NO_HANDLER_FOUND",
+        commandKind: command.kind,
+      });
     }
 
     const result = await handler.handle(command);
@@ -28,6 +35,7 @@ export function buildInvokeCommandHandlerMiddleware(
 
   return {
     intercept,
+    name: "invokeCommandHandlerMiddleware",
   };
 }
 
@@ -39,6 +47,7 @@ function findHandler<TCommand extends CommandType<TCommand>>(
     return undefined;
   }
 
+  // O(N) complexity by is doing type inference on each handler
   for (const handler of handlers) {
     if (isTheRightHandler(handler, command)) {
       return handler;
