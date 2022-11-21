@@ -30,6 +30,10 @@ Usually those things are done thanks to **Middleware** system. If you're familia
 
 You will have to declare, your `Commands`, `Commmand Handlers` and `Middlewares`
 
+Caution:
+
+In TCommand bus, I've made the choice of `returning` something from the command bus. It can looks like an anti-pattern BUT often we need it, not everyone can work with fully asynchronous flows and it can be  useful
+
 ### Command
 
 Here is a command
