@@ -17,9 +17,9 @@ type BusResult<TCommand extends CommandType<TCommand>> = R.Result<
   CommandReturnType<TCommand>
 >;
 
-export function buildCommandBus(
-  handlers: AnyCommandHandler[],
-  middlewares: Middleware[],
+export function buildCommandBus<Handlers extends AnyCommandHandler[], Middlewares extends Middleware[]>(
+  handlers: UniqueArrayWithProp<"handledCommandKind", Handlers>,
+  middlewares: UniqueArrayWithProp<"name", Middlewares>,
   logger: Logger
 ): CommandBus {
   const middlewareChain = createMiddlewareChain(handlers, middlewares, logger);
@@ -34,3 +34,21 @@ export function buildCommandBus(
     handle,
   };
 }
+
+type IsUniqueWithProp<
+  Prop extends string,
+  A extends readonly unknown[]
+> = A extends readonly [infer X, ...infer Rest]
+  ? Rest[number] extends { [key in Prop]: infer RestProp }
+    ? X extends { [key in Prop]: infer XProp }
+      ? RestProp extends XProp
+        ? false
+        : IsUniqueWithProp<Prop, Rest>
+      : false
+    : false
+  : true;
+
+type UniqueArrayWithProp<
+  Prop extends string,
+  A extends readonly unknown[]
+> = IsUniqueWithProp<Prop, A> extends true ? A : never;
