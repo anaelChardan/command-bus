@@ -8,7 +8,7 @@ import {
   nextMiddleware,
 } from "../";
 import { Logger } from "../logger";
-import { result as R } from "../utils";
+import { result as R, nonEmptyArray as NEA } from "../utils";
 
 type EditCardLimitsCommand = Command<
   { hasEdited: boolean },
@@ -75,6 +75,8 @@ function buildCancelCardHandler(): CancelCardCommandHandler {
 const editCardLimitsHandler = buildEditCardLimitsHandler();
 const cancelCardCommandHandler = buildCancelCardHandler();
 
+const handlers = [editCardLimitsHandler, cancelCardCommandHandler];
+
 const editCardLimitsCommand: EditCardLimitsCommand = {
   kind: "editCardLimits",
   payload: {
@@ -85,7 +87,7 @@ const editCardLimitsCommand: EditCardLimitsCommand = {
 
 describe("Commandbus", () => {
   it("should call the command handler", async () => {
-    const bus = buildCommandBus([editCardLimitsHandler, cancelCardCommandHandler], [], logger);
+    const bus = buildCommandBus(NEA.toNonEmptyArray(handlers), [], logger);
 
     const result = await bus.handle(editCardLimitsCommand);
 

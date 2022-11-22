@@ -1,10 +1,9 @@
 import { CommandReturnType, CommandType } from "./command";
 import { createMiddlewareChain } from "./middleware/chain";
 import { Middleware } from "./middleware/types";
-import { result as R } from "./utils";
+import { result as R, nonEmptyArray as NEA } from "./utils";
 import { AnyCommandHandler } from "./handler";
 import { Logger } from "./logger";
-import { NonEmptyArray } from "./utils/nonEmptyArray";
 import { UniqueArrayWithProp } from "./utils/isUniqueWithProp";
 
 export type CommandBus = {
@@ -20,7 +19,7 @@ type BusResult<TCommand extends CommandType<TCommand>> = R.Result<
 >;
 
 export function buildCommandBus<
-  Handlers extends NonEmptyArray<AnyCommandHandler>,
+  Handlers extends NEA.NonEmptyArray<AnyCommandHandler>,
   Middlewares extends Middleware[]
 >(
   handlers: UniqueArrayWithProp<"handledCommandKind", Handlers>,
