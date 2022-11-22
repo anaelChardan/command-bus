@@ -1,6 +1,6 @@
 import { CommandType } from "../command";
 import { Middleware, MiddlewareResult } from "./types";
-import { result as R } from "@dev-spendesk/general-type-helpers";
+import { result as R } from "../utils";
 import { buildInvokeCommandHandlerMiddleware } from "./invokeCommandHandlerMiddleware";
 import { AnyCommandHandler } from "../handler";
 import { Logger } from "../logger";

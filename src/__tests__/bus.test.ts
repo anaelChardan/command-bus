@@ -8,7 +8,7 @@ import {
   nextMiddleware,
 } from "../";
 import { Logger } from "../logger";
-import { result as R } from "@dev-spendesk/general-type-helpers";
+import { result as R } from "../utils";
 
 type EditCardLimitsCommand = Command<
   { hasEdited: boolean },
@@ -75,8 +75,6 @@ function buildCancelCardHandler(): CancelCardCommandHandler {
 const editCardLimitsHandler = buildEditCardLimitsHandler();
 const cancelCardCommandHandler = buildCancelCardHandler();
 
-const handlers = [editCardLimitsHandler, cancelCardCommandHandler];
-
 const editCardLimitsCommand: EditCardLimitsCommand = {
   kind: "editCardLimits",
   payload: {
@@ -87,7 +85,7 @@ const editCardLimitsCommand: EditCardLimitsCommand = {
 
 describe("Commandbus", () => {
   it("should call the command handler", async () => {
-    const bus = buildCommandBus(handlers, [], logger);
+    const bus = buildCommandBus([editCardLimitsHandler, cancelCardCommandHandler], [], logger);
 
     const result = await bus.handle(editCardLimitsCommand);
 
@@ -134,7 +132,7 @@ describe("Commandbus", () => {
     };
 
     const bus = buildCommandBus(
-      handlers,
+      [editCardLimitsHandler, cancelCardCommandHandler],
       [middlewareOne, middlewareTwo],
       logger
     );

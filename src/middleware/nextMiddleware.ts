@@ -1,6 +1,6 @@
 import { CommandType } from "../command";
 import { MiddlewareResult } from "./types";
-import { result as R } from "@dev-spendesk/general-type-helpers";
+import { result as R } from "../utils";
 
 export async function nextMiddleware<
   TCommand extends CommandType<TCommand>

@@ -1,5 +1,5 @@
 import { CommandReturnType, CommandType } from "../command";
-import { result as R } from "@dev-spendesk/general-type-helpers";
+import { result as R } from "../utils";
 
 export type Middleware = {
   name: string;

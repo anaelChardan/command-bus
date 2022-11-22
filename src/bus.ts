@@ -1,9 +1,11 @@
 import { CommandReturnType, CommandType } from "./command";
 import { createMiddlewareChain } from "./middleware/chain";
 import { Middleware } from "./middleware/types";
-import { result as R } from "@dev-spendesk/general-type-helpers";
+import { result as R } from "./utils";
 import { AnyCommandHandler } from "./handler";
 import { Logger } from "./logger";
+import { NonEmptyArray } from "./utils/nonEmptyArray";
+import { UniqueArrayWithProp } from "./utils/isUniqueWithProp";
 
 export type CommandBus = {
   handle<TCommand extends CommandType<TCommand>>(
@@ -17,7 +19,10 @@ type BusResult<TCommand extends CommandType<TCommand>> = R.Result<
   CommandReturnType<TCommand>
 >;
 
-export function buildCommandBus<Handlers extends AnyCommandHandler[], Middlewares extends Middleware[]>(
+export function buildCommandBus<
+  Handlers extends NonEmptyArray<AnyCommandHandler>,
+  Middlewares extends Middleware[]
+>(
   handlers: UniqueArrayWithProp<"handledCommandKind", Handlers>,
   middlewares: UniqueArrayWithProp<"name", Middlewares>,
   logger: Logger
@@ -34,21 +39,3 @@ export function buildCommandBus<Handlers extends AnyCommandHandler[], Middleware
     handle,
   };
 }
-
-type IsUniqueWithProp<
-  Prop extends string,
-  A extends readonly unknown[]
-> = A extends readonly [infer X, ...infer Rest]
-  ? Rest[number] extends { [key in Prop]: infer RestProp }
-    ? X extends { [key in Prop]: infer XProp }
-      ? RestProp extends XProp
-        ? false
-        : IsUniqueWithProp<Prop, Rest>
-      : false
-    : false
-  : true;
-
-type UniqueArrayWithProp<
-  Prop extends string,
-  A extends readonly unknown[]
-> = IsUniqueWithProp<Prop, A> extends true ? A : never;
